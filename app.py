@@ -3,10 +3,39 @@ import streamlit as st
 import openai
 import os
 
-# --- CONFIG ---
+# --- PAGE SETUP ---
 st.set_page_config(page_title="🤖 AI Chatbot", page_icon="💬")
 
-# Read API key from Streamlit Secrets (secure)
+# --- CUSTOM CSS STYLING ---
+st.markdown(
+    """
+    <style>
+    body {
+        background-color: #1e88e5; /* blue background */
+        color: white;
+        font-family: "Segoe UI", sans-serif;
+    }
+    .stApp {
+        background-color: #1e88e5;
+    }
+    .stChatMessage {
+        background-color: #1565c0;
+        border-radius: 10px;
+        padding: 8px;
+        margin-bottom: 6px;
+    }
+    .stChatMessage.user {
+        background-color: #42a5f5;
+    }
+    h1, h2, h3 {
+        color: #ffffff;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# --- OPENAI API KEY SETUP ---
 if "OPENAI_API_KEY" in st.secrets:
     openai.api_key = st.secrets["OPENAI_API_KEY"]
 else:
@@ -24,7 +53,7 @@ if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "system", "content": "You are a helpful assistant."}]
 
 # --- DISPLAY CHAT HISTORY ---
-for msg in st.session_state.messages[1:]:  # skip system message
+for msg in st.session_state.messages[1:]:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
@@ -57,7 +86,7 @@ if prompt := st.chat_input("Type your message..."):
     # Add assistant message to history
     st.session_state.messages.append({"role": "assistant", "content": reply})
 
-# --- SIDEBAR ---
+# --- SIDEBAR SETTINGS ---
 with st.sidebar:
     st.header("⚙️ Settings")
     st.write("**Model:**", MODEL)
@@ -67,34 +96,4 @@ with st.sidebar:
         st.session_state.messages = [{"role": "system", "content": "You are a helpful assistant."}]
         st.experimental_rerun()
 
-st.markdown("<br><hr><center>Made with ❤️ using Streamlit</center>", unsafe_allow_html=True)
-      background: #1e88e5;
-      padding: 0.5rem 1rem;
-      border-radius: 0.5rem;
-      text-decoration: none;
-      font-weight: 600;
-    }
-    a:hover { background: #1565c0; }
-  </style>
-</head>
-<body>
-  <h1>🚀 Nabeel's Project Hub</h1>
-  <div class="projects">
-    <div class="card">
-      <h2>AI Gmail Sender</h2>
-      <p>Automatically send emails with AI integration.</p>
-      <a href="https://nabeel-gmail.streamlit.app" target="_blank">Open Project</a>
-    </div>
-    <div class="card">
-      <h2>Best CV Ranker</h2>
-      <p>Ranks CVs using AI-based keyword and score matching.</p>
-      <a href="https://nabeel-cvranker.streamlit.app" target="_blank">Open Project</a>
-    </div>
-    <div class="card">
-      <h2>PakGhar Laundry Capsules</h2>
-      <p>Eco-friendly single-use detergent pods business plan.</p>
-      <a href="https://nabeel-laundry.streamlit.app" target="_blank">Open Project</a>
-    </div>
-  </div>
-</body>
-</html>
+st.markdown("<br><hr><center>Made with ❤️ by Nabeel</center>", unsafe_allow_html=True)
