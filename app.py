@@ -4,18 +4,15 @@ import google.generativeai as genai
 st.set_page_config(page_title="AI Chatbot (Gemini)", page_icon="💬")
 
 # --- STYLE ---
-st.markdown(
-    """
-    <style>
-    body, .stApp {
-        background-color: white;
-        color: black;
-        font-family: "Segoe UI", sans-serif;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+st.markdown("""
+<style>
+body, .stApp {
+    background-color: white;
+    color: black;
+    font-family: "Segoe UI", sans-serif;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # --- API KEY INPUT ---
 st.sidebar.header("🔑 Gemini API Key Setup")
@@ -27,38 +24,44 @@ if not api_key:
 
 # Configure Gemini
 genai.configure(api_key=api_key)
-model = genai.GenerativeModel("gemini-1.5-flash")
+
+# ✅ Correct model name for latest API
+MODEL = "gemini-1.5-flash-latest"
 
 # --- SESSION STATE ---
-if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "system", "content": "You are a helpful assistant."}]
+if "chat" not in st.session_state:
+    model = genai.GenerativeModel(MODEL)
+    st.session_state.chat = model.start_chat(history=[])
+    st.session_state.history = []
 
 # --- DISPLAY CHAT ---
-for msg in st.session_state.messages[1:]:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+for role, text in st.session_state.history:
+    with st.chat_message(role):
+        st.markdown(text)
 
 # --- USER INPUT ---
 if prompt := st.chat_input("Type your message..."):
-    st.session_state.messages.append({"role": "user", "content": prompt})
+    st.session_state.history.append(("user", prompt))
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        placeholder = st.empty()
-        placeholder.markdown("Thinking...")
+        message_placeholder = st.empty()
+        message_placeholder.markdown("Thinking...")
 
         try:
-            response = model.generate_content(prompt)
+            response = st.session_state.chat.send_message(prompt)
             reply = response.text
         except Exception as e:
             reply = f"⚠️ Error: {e}"
 
-        placeholder.markdown(reply)
-        st.session_state.messages.append({"role": "assistant", "content": reply})
+        message_placeholder.markdown(reply)
+        st.session_state.history.append(("assistant", reply))
 
 # --- SIDEBAR ---
 with st.sidebar:
     if st.button("Clear Chat"):
-        st.session_state.messages = [{"role": "system", "content": "You are a helpful assistant."}]
+        model = genai.GenerativeModel(MODEL)
+        st.session_state.chat = model.start_chat(history=[])
+        st.session_state.history = []
         st.rerun()
