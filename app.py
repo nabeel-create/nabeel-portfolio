@@ -1,6 +1,6 @@
 # app.py
 import streamlit as st
-import openai
+from openai import OpenAI
 import os
 
 st.set_page_config(page_title="AI Chatbot", page_icon="💬")
@@ -20,11 +20,10 @@ st.markdown(
 )
 
 # --- API KEY ---
-if "OPENAI_API_KEY" in st.secrets:
-    openai.api_key = st.secrets["OPENAI_API_KEY"]
-else:
+if "OPENAI_API_KEY" not in st.secrets:
     st.stop()
 
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 MODEL = "gpt-4o-mini"
 
 # --- SESSION STATE ---
@@ -44,16 +43,18 @@ if prompt := st.chat_input("Type your message..."):
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
         message_placeholder.markdown("Thinking...")
+
         try:
-            response = openai.ChatCompletion.create(
+            response = client.chat.completions.create(
                 model=MODEL,
                 messages=st.session_state.messages,
                 temperature=0.7,
                 max_tokens=512,
             )
-            reply = response["choices"][0]["message"]["content"]
+            reply = response.choices[0].message.content
         except Exception as e:
             reply = f"Error: {e}"
+
         message_placeholder.markdown(reply)
     st.session_state.messages.append({"role": "assistant", "content": reply})
 
