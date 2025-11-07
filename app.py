@@ -22,19 +22,27 @@ if not api_key:
     st.warning("Please enter your Gemini API key to continue.")
     st.stop()
 
-# Configure Gemini
+# --- CONFIGURE GEMINI ---
 genai.configure(api_key=api_key)
 
-# ✅ Correct model name for latest API
-MODEL = "gemini-1.5-flash-latest"
+# --- FIND AVAILABLE MODEL ---
+try:
+    available_models = [m.name for m in genai.list_models() if "gemini" in m.name.lower()]
+    if not available_models:
+        st.error("⚠️ No Gemini models found for this API key. Check your Google AI Studio access.")
+        st.stop()
+    MODEL = available_models[0]  # pick the first available model
+except Exception as e:
+    st.error(f"Error loading models: {e}")
+    st.stop()
 
-# --- SESSION STATE ---
+# --- SETUP CHAT ---
 if "chat" not in st.session_state:
     model = genai.GenerativeModel(MODEL)
     st.session_state.chat = model.start_chat(history=[])
     st.session_state.history = []
 
-# --- DISPLAY CHAT ---
+# --- DISPLAY CHAT HISTORY ---
 for role, text in st.session_state.history:
     with st.chat_message(role):
         st.markdown(text)
@@ -46,8 +54,8 @@ if prompt := st.chat_input("Type your message..."):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        message_placeholder = st.empty()
-        message_placeholder.markdown("Thinking...")
+        placeholder = st.empty()
+        placeholder.markdown("Thinking...")
 
         try:
             response = st.session_state.chat.send_message(prompt)
@@ -55,7 +63,7 @@ if prompt := st.chat_input("Type your message..."):
         except Exception as e:
             reply = f"⚠️ Error: {e}"
 
-        message_placeholder.markdown(reply)
+        placeholder.markdown(reply)
         st.session_state.history.append(("assistant", reply))
 
 # --- SIDEBAR ---
