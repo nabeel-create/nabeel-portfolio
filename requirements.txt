@@ -1,2 +1,6 @@
-streamlit
-google-generativeai>=0.7.2
+streamlit>=1.18.0
+requests
+transformers>=4.30.0
+huggingface-hub
+torch            # or "torch" appropriate for your platform; if using CPU-only, install CPU wheel
+sentencepiece
